@@ -1,69 +1,86 @@
-from flask import Flask, render_template, request, redirect, session, url_for, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3, os
+from flask import Flask, render_template, request, redirect, url_for, session, g
+import sqlite3
+import os
 
 app = Flask(__name__)
-app.secret_key = 'nagyontitkoskod'
+app.secret_key = 'supersecretkey'
+DATABASE = 'myvip.db'
 
-# Adatbázis inicializálás
-DB_NAME = 'users.db'
+# -------- DATABASE CONNECTION --------
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect(DATABASE)
+    return g.db
 
+@app.teardown_appcontext
+def close_db(error):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
+
+# -------- DATABASE INIT --------
 def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        conn.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            avatar TEXT
-        )''')
-init_db()
+    with app.app_context():
+        db = get_db()
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
+        db.commit()
 
+# -------- ROUTES --------
 @app.route('/')
 def index():
-    if 'user_id' in session:
+    if 'username' in session:
         return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed = generate_password_hash(password)
+        db = get_db()
         try:
-            with sqlite3.connect(DB_NAME) as conn:
-                conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed))
-                conn.commit()
-            flash('Sikeres regisztráció! Jelentkezz be.')
+            db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+            db.commit()
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
-            flash('Ez a felhasználónév már foglalt.')
-    return render_template('register.html')
+            error = "Ez a felhasználónév már létezik!"
+    return render_template('register.html', error=error)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        with sqlite3.connect(DB_NAME) as conn:
-            user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-            if user and check_password_hash(user[2], password):
-                session['user_id'] = user[0]
-                session['username'] = user[1]
-                return redirect(url_for('dashboard'))
-            flash('Hibás bejelentkezési adatok.')
-    return render_template('login.html')
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return f"Bejelentkezve mint: {session['username']} <br><a href='/logout'>Kijelentkezés</a>"
+        db = get_db()
+        user = db.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password)).fetchone()
+        if user:
+            session['username'] = username
+            return redirect(url_for('dashboard'))
+        else:
+            error = "Hibás felhasználónév vagy jelszó!"
+    return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html', username=session['username'])
+
+# -------- MAIN --------
 if __name__ == '__main__':
+    if not os.path.exists(DATABASE):
+        init_db()
     app.run(debug=True)

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>MyChat – Dashboard</title>
+  <style>
+    body {
+      background-color: #f2e8ff;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #7a3cff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .profile img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #a074ff;
+      margin-right: 20px;
+    }
+
+    .username {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .status {
+      color: #666;
+      font-style: italic;
+    }
+
+    .menu {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
+    }
+
+    .menu a {
+      background-color: #a074ff;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .menu a:hover {
+      background-color: #8654f0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Üdv újra, {{ username }}! 👋</h1>
+  </header>
+
+  <div class="container">
+    <div class="profile">
+      <img src="/static/default_profile.png" alt="Profilkép">
+      <div>
+        <div class="username">{{ username }}</div>
+        <div class="status">"Még nincs státuszod..."</div>
+      </div>
+    </div>
+
+    <div class="menu">
+      <a href="/friends">Ismerősök</a>
+      <a href="/chat">Chat</a>
+      <a href="/profile">Profilom</a>
+      <a href="/logout">Kijelentkezés</a>
+    </div>
+  </div>
+</body>
+</html>
