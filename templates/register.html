@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Regisztráció – MyChat</title>
+  <style>
+    body {
+      background: #f0eaff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+    }
+
+    header {
+      background-color: #7a3cff;
+      color: white;
+      padding: 20px 0;
+    }
+
+    h2 {
+      margin-top: 40px;
+    }
+
+    form {
+      display: inline-block;
+      text-align: left;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin-top: 30px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #a074ff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #8654f0;
+    }
+
+    .link {
+      margin-top: 15px;
+      display: block;
+    }
+
+    ul {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MyChat Regisztráció</h1>
+  </header>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST">
+    <h2>Új fiók létrehozása</h2>
+    <label>Felhasználónév:</label>
+    <input type="text" name="username" required>
+
+    <label>Jelszó:</label>
+    <input type="password" name="password" required>
+
+    <button type="submit">Regisztrálok</button>
+    <a class="link" href="/login">Már van fiókod? Bejelentkezés</a>
+  </form>
+</body>
+</html>
